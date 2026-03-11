@@ -1,7 +1,7 @@
 // actions/tenantActions.js
 "use server";
 
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from "@/lib/mongodb";
 import Tenant from "@/models/Tenant";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -57,4 +57,62 @@ export async function createTenant(formData) {
   // 4. Limpiar la caché y redirigir a la lista de inquilinos
   revalidatePath("/dashboard/tenants");
   redirect("/dashboard/tenants");
+}
+
+// Función para actualizar (Update)
+export async function updateTenant(tenantId, formData) {
+  await dbConnect();
+
+  const tenantData = {
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    identification: {
+      idType: formData.get("idType"),
+      idNumber: formData.get("idNumber"),
+    },
+    financialProfile: {
+      employmentStatus: formData.get("employmentStatus"),
+      employerName: formData.get("employerName"),
+      jobTitle: formData.get("jobTitle"),
+      monthlyIncome: Number(formData.get("monthlyIncome")),
+    },
+    emergencyContact: {
+      name: formData.get("emergencyName"),
+      relationship: formData.get("emergencyRelationship"),
+      phone: formData.get("emergencyPhone"),
+    },
+  };
+
+  try {
+    await Tenant.findByIdAndUpdate(tenantId, tenantData, {
+      runValidators: true,
+    });
+  } catch (error) {
+    console.error("Error al actualizar el inquilino:", error);
+    return { error: "No se pudo actualizar el perfil." };
+  }
+
+  revalidatePath(`/dashboard/tenants/${tenantId}`);
+  revalidatePath("/dashboard/tenants");
+  redirect(`/dashboard/tenants/${tenantId}`);
+}
+
+// Función para borrado lógico (Soft Delete)
+export async function archiveTenant(tenantId) {
+  await dbConnect();
+
+  try {
+    // Cambiamos a isArchived: true y el estado a 'past_tenant' por seguridad
+    await Tenant.findByIdAndUpdate(tenantId, {
+      isArchived: true,
+      status: "past_tenant",
+    });
+  } catch (error) {
+    console.error("Error al archivar:", error);
+    return { error: "No se pudo archivar el inquilino." };
+  }
+
+  revalidatePath("/dashboard/tenants");
 }

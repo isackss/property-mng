@@ -106,22 +106,24 @@ export default async function PropiedadesPage() {
                           : "Mantenimiento"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-4">
-                    <Link
-                      href={`/dashboard/properties/${propiedad._id.toString()}`}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Ver detalle
-                    </Link>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-4">
+                      <Link
+                        href={`/dashboard/properties/${propiedad._id.toString()}`}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Ver detalle
+                      </Link>
 
-                    <Link
-                      href={`/dashboard/properties/${propiedad._id.toString()}/edit`}
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      Editar
-                    </Link>
+                      <Link
+                        href={`/dashboard/properties/${propiedad._id.toString()}/edit`}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Editar
+                      </Link>
 
-                    <ArchiveButton propertyId={propiedad._id.toString()} />
+                      <ArchiveButton propertyId={propiedad._id.toString()} />
+                    </div>
                   </td>
                 </tr>
               ))
