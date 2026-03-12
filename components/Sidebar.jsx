@@ -14,6 +14,7 @@ export default function Sidebar() {
     { name: "Tenants", href: "/dashboard/tenants", icon: "👥" },
     { name: "Leases", href: "/dashboard/leases", icon: "📄" },
     { name: "Payments", href: "/dashboard/payments", icon: "💵" },
+    { name: "Investors", href: "/dashboard/investors", icon: "💰" },
   ];
 
   // Función para determinar si el enlace está activo
