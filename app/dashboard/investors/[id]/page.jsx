@@ -3,7 +3,11 @@
 import dbConnect from "@/lib/mongodb";
 import Investor from "@/models/Investor";
 import InvestorDividend from "@/models/InvestorDividend";
-import { createDividend, payDividend } from "@/actions/investorActions";
+import {
+  createDividend,
+  payDividend,
+  addAssetToInvestor,
+} from "@/actions/investorActions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -58,10 +62,10 @@ export default async function InvestorLedgerPage({ params }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ========================================== */}
-        {/* COLUMNA IZQUIERDA: PERFIL Y BANCO          */}
+        {/* COLUMNA IZQUIERDA: PERFIL, BANCO Y ACTIVOS */}
         {/* ========================================== */}
         <div className="space-y-6">
-          {/* Tarjeta de Perfil */}
+          {/* Tarjeta de Perfil y Banco... (Mantenlas igual que antes) */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 border-t-4 border-t-blue-600">
             <h2 className="text-xl font-black text-gray-900">
               {investor.firstName} {investor.lastName}
@@ -70,71 +74,59 @@ export default async function InvestorLedgerPage({ params }) {
               {investor.identification.idType}:{" "}
               {investor.identification.idNumber}
             </p>
-
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 text-sm text-gray-700">
-                <span>✉️</span> {investor.email}
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-700">
-                <span>📞</span> {investor.phone}
-              </div>
-            </div>
           </div>
 
-          {/* Tarjeta Bancaria (Lista para copiar y pegar en la banca en línea) */}
-          <div className="bg-blue-900 text-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <span>🏦</span> Transfer Details
+          {/* NUEVA SECCIÓN: HABITACIONES DEL INVERSOR (ASSETS) */}
+          <div className="bg-gray-100 rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-md font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4 flex items-center gap-2">
+              <span>🏢</span> Owned Rooms (Portfolio)
             </h3>
-            <div className="space-y-4 text-sm">
-              <div>
-                <p className="text-blue-300 text-xs uppercase font-bold tracking-wider">
-                  Beneficiary Name
+
+            {/* Lista de habitaciones asignadas */}
+            <ul className="mb-4 space-y-2">
+              {investor.assets && investor.assets.length > 0 ? (
+                investor.assets.map((asset, index) => (
+                  <li
+                    key={index}
+                    className="bg-white px-3 py-2 rounded border text-sm flex items-center font-medium text-gray-700 before:content-['🔑'] before:mr-2"
+                  >
+                    {asset.roomIdentifier}
+                  </li>
+                ))
+              ) : (
+                <p className="text-xs text-gray-500 italic">
+                  No rooms assigned to this investor yet.
                 </p>
-                <p className="font-medium text-base mt-0.5">
-                  {investor.bankDetails.accountName}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-blue-300 text-xs uppercase font-bold tracking-wider">
-                    Bank
-                  </p>
-                  <p className="font-medium mt-0.5">
-                    {investor.bankDetails.bankName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-blue-300 text-xs uppercase font-bold tracking-wider">
-                    Type
-                  </p>
-                  <p className="font-medium mt-0.5 capitalize">
-                    {investor.bankDetails.accountType}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <p className="text-blue-300 text-xs uppercase font-bold tracking-wider">
-                  Account Number
-                </p>
-                <p className="font-mono text-lg mt-0.5 bg-blue-950 px-2 py-1 rounded inline-block tracking-wider">
-                  {investor.bankDetails.accountNumber}
-                </p>
-              </div>
-              {investor.bankDetails.swiftCode && (
-                <div>
-                  <p className="text-blue-300 text-xs uppercase font-bold tracking-wider">
-                    SWIFT Code
-                  </p>
-                  <p className="font-mono mt-0.5">
-                    {investor.bankDetails.swiftCode}
-                  </p>
-                </div>
               )}
-            </div>
+            </ul>
+
+            {/* Formulario simplificado para asignar habitación */}
+            <form
+              action={addAssetToInvestor}
+              className="flex gap-2 mt-4 pt-4 border-t border-gray-200"
+            >
+              <input
+                type="hidden"
+                name="investorId"
+                value={investor._id.toString()}
+              />
+              <input
+                type="text"
+                name="roomIdentifier"
+                placeholder="Room (e.g. 402)"
+                required
+                className="w-3/4 rounded border p-2 text-sm"
+              />
+              <button
+                type="submit"
+                className="w-1/4 bg-blue-600 text-white rounded text-sm font-bold hover:bg-blue-700 transition"
+              >
+                Add
+              </button>
+            </form>
           </div>
 
-          {/* Formulario: Declarar Nueva Deuda (Fase 1) */}
+          {/* ACTUALIZADO: Formulario de Deuda Seguro */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-md font-bold text-gray-900 border-b pb-2 mb-4">
               ➕ Declare New Dividend (Debt)
@@ -146,17 +138,29 @@ export default async function InvestorLedgerPage({ params }) {
                 value={investor._id.toString()}
               />
 
+              {/* AQUÍ ESTÁ LA MAGIA: El campo de texto se vuelve un selector restringido */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase">
                   Room / Asset
                 </label>
-                <input
-                  type="text"
-                  name="roomIdentifier"
-                  placeholder="e.g. Room 402"
-                  required
-                  className="mt-1 block w-full rounded border p-2 text-sm"
-                />
+                {investor.assets && investor.assets.length > 0 ? (
+                  <select
+                    name="roomIdentifier"
+                    required
+                    className="mt-1 block w-full rounded border p-2 text-sm bg-white"
+                  >
+                    {investor.assets.map((asset, index) => (
+                      <option key={index} value={asset.roomIdentifier}>
+                        {asset.roomIdentifier}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="mt-1 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-200">
+                    ⚠️ Assign a room in the portfolio above before declaring a
+                    dividend.
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -194,14 +198,16 @@ export default async function InvestorLedgerPage({ params }) {
                 <input
                   type="text"
                   name="notes"
-                  placeholder="e.g. Calculated after 30% mgmt fee"
+                  placeholder="e.g. Calculated after mgmt fee"
                   className="mt-1 block w-full rounded border p-2 text-sm"
                 />
               </div>
 
+              {/* Bloqueamos el botón si no tiene propiedades */}
               <button
                 type="submit"
-                className="w-full bg-gray-900 text-white py-2 rounded font-bold text-sm hover:bg-gray-800 transition"
+                disabled={!investor.assets || investor.assets.length === 0}
+                className="w-full bg-gray-900 text-white py-2 rounded font-bold text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Add to Accounts Payable
               </button>

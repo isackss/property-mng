@@ -105,3 +105,27 @@ export async function payDividend(dividendId, formData) {
   revalidatePath(`/dashboard/investors/${investorId}`);
   redirect(`/dashboard/investors/${investorId}`);
 }
+
+// Añadir esta función al final de actions/investorActions.js
+
+export async function addAssetToInvestor(formData) {
+  await dbConnect();
+
+  const investorId = formData.get("investorId");
+
+  const newAsset = {
+    roomIdentifier: formData.get("roomIdentifier"), // Ej. "Habitación 402"
+  };
+
+  try {
+    // Añadimos la habitación al portafolio del inversor
+    await Investor.findByIdAndUpdate(investorId, {
+      $push: { assets: newAsset },
+    });
+  } catch (error) {
+    console.error("Error al asignar la habitación:", error);
+    return { error: "No se pudo asignar la habitación." };
+  }
+
+  revalidatePath(`/dashboard/investors/${investorId}`);
+}

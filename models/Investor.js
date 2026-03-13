@@ -35,8 +35,6 @@ const investorSchema = new mongoose.Schema(
     assets: [
       {
         roomIdentifier: { type: String, required: true }, // Ej. "Habitación 402" o "Suite 10"
-        sharePercentage: { type: Number, required: true }, // Ej. 50 (para el 50%)
-        notes: { type: String },
       },
     ],
 

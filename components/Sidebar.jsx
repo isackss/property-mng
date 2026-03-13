@@ -10,11 +10,11 @@ export default function Sidebar() {
   // Definimos nuestros enlaces y rutas
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: "📊" },
-    { name: "Properties", href: "/dashboard/properties", icon: "🏢" },
-    { name: "Tenants", href: "/dashboard/tenants", icon: "👥" },
-    { name: "Leases", href: "/dashboard/leases", icon: "📄" },
-    { name: "Payments", href: "/dashboard/payments", icon: "💵" },
-    { name: "Investors", href: "/dashboard/investors", icon: "💰" },
+    { name: "Propiedades", href: "/dashboard/properties", icon: "🏢" },
+    { name: "Inquilinos", href: "/dashboard/tenants", icon: "👥" },
+    { name: "Contratos", href: "/dashboard/leases", icon: "📄" },
+    { name: "Pagos", href: "/dashboard/payments", icon: "💵" },
+    { name: "Co-propietarios", href: "/dashboard/investors", icon: "💰" },
   ];
 
   // Función para determinar si el enlace está activo
